@@ -1,0 +1,64 @@
+---
+title: "Homework3"
+author: "Safiya Alavi"
+date: "10/18/2022"
+output: html_document
+---
+```{r set up, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(tidymodels)
+library(tidyr)
+library(tidyverse)
+library(corrr)
+# read data into R
+titanic = read_csv("/Users/safiyaalavi/Desktop/PSTAT 131/homework-3/data/titanic.csv")
+
+```
+
+### Question 1
+##### Split the data, stratifying on the outcome variable, survived. You should choose the proportions to split the data into. Verify that the training and testing data sets have the appropriate number of observations. Take a look at the training data and note any potential issues, such as missing data.
+
+##### Why is it a good idea to use stratified sampling for this data?
+
+The predictor variables age and cabin have missing values. Many of the cabin variables are missing, so it will be difficult to use this data for analysis. Just looking at the data, I see that for many observations where the fare is a higher number, there is a cabin specified. Although, for many observations with a lower value for fair, there is no cabin number. Without background information, this observation of the data may or may not have any meaning. 
+
+It is a good idea to use stratified sampling because we want to ensure we have a good representation of our total population who both survived and did not survive for our training and testing data. 
+
+
+```{r question 1}
+# split the titanic data into training and testing data sets
+set.seed(12345)
+titanic_split <- initial_split(titanic, prop = 0.75, strata = survived)
+titanic_training <- training(titanic_split)
+titanic_testing <- testing(titanic_split)
+```
+
+<br>
+<br>
+
+### Question 2
+##### Using the training data set, explore/describe the distribution of the outcome variable survived.
+
+```{r question 2}
+titanic_training %>% ggplot(aes(x = survived)) + geom_bar(fill = "blue")
+
+```
+<br>
+<br>
+As we can see, the count for "No" in the survived column is a little more than 400, whereas the count for "Yes" is around 250. 
+
+### Question 3
+##### Using the training data set, create a correlation matrix of all continuous variables. Create a visualization of the matrix, and describe any patterns you see. Are any predictors correlated with each other? Which ones, and in which direction?
+
+```{r question 3}
+cor_training_titanic <- titanic_training %>% select(passenger_id, pclass, age, sib_sp, parch, fare) %>% correlate()
+
+rplot(cor_training_titanic) + theme_dark() + scale_x_discrete(guide = guide_axis(n.dodge=2))
+```
+<br>
+<br>
+Through the visual, we can see that pclass and fare are highly correlated in the negative direction. Pclass and age are also fairly correlated in the negative direction. 
+
+
+
