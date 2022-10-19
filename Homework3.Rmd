@@ -26,7 +26,7 @@ The predictor variables age and cabin have missing values. Many of the cabin var
 It is a good idea to use stratified sampling because we want to ensure we have a good representation of our total population who both survived and did not survive for our training and testing data. 
 
 
-```{r question 1}
+```{r question 1, message=FALSE}
 # split the titanic data into training and testing data sets
 set.seed(12345)
 titanic_split <- initial_split(titanic, prop = 0.75, strata = survived)
@@ -40,7 +40,7 @@ titanic_testing <- testing(titanic_split)
 ### Question 2
 ##### Using the training data set, explore/describe the distribution of the outcome variable survived.
 
-```{r question 2}
+```{r question 2, message=FALSE}
 titanic_training %>% ggplot(aes(x = survived)) + geom_bar(fill = "blue")
 
 ```
@@ -51,14 +51,44 @@ As we can see, the count for "No" in the survived column is a little more than 4
 ### Question 3
 ##### Using the training data set, create a correlation matrix of all continuous variables. Create a visualization of the matrix, and describe any patterns you see. Are any predictors correlated with each other? Which ones, and in which direction?
 
-```{r question 3}
-cor_training_titanic <- titanic_training %>% select(passenger_id, pclass, age, sib_sp, parch, fare) %>% correlate()
+```{r question 3, message=FALSE}
+cor_training_titanic <- titanic_training %>% select(passenger_id, age, sib_sp, parch, fare) %>% correlate()
 
 rplot(cor_training_titanic) + theme_dark() + scale_x_discrete(guide = guide_axis(n.dodge=2))
 ```
 <br>
 <br>
-Through the visual, we can see that pclass and fare are highly correlated in the negative direction. Pclass and age are also fairly correlated in the negative direction. 
+Through the visual, we can see that age and sib_sp (# of siblings/spouses on board) are fairly correlated in the negative direction. Sib_sp and parch are also fairly correlated in the positive direction. 
 
+### Question 4
+##### Using the training data, create a recipe predicting the outcome variable survived. Include the following predictors: ticket class, sex, age, number of siblings or spouses aboard, number of parents or children aboard, and passenger fare.
 
+##### Recall that there were missing values for age. To deal with this, add an imputation step using step_impute_linear(). Next, use step_dummy() to dummy encode categorical predictors. Finally, include interactions between: Sex and passenger fare, and Age and passenger fare.
 
+```{r question 4, message = FALSE}
+titanic_recipe <- recipe(survived ~ pclass + sex + age + sib_sp + parch + fare, data = titanic_training) %>% step_impute_linear(age) %>% step_dummy(pclass, sex) %>% step_interact(terms = ~ sex:fare + age:fare)
+```
+<br>
+<br>
+
+### Question 5
+##### Specify a logistic regression model for classification using the "glm" engine. Then create a workflow. Add your model and the appropriate recipe. Finally, use fit() to apply your workflow to the training data.
+
+```{r question 5, message = FALSE}
+
+# specifying the logistic regression model using the glm engine
+log_reg <- logistic_reg() %>% set_engine("glm") %>% set_mode("classification")
+
+# creating a workflow
+log_wkflow <- workflow() %>% 
+  add_model(log_reg) %>% 
+  add_recipe(titanic_recipe)
+
+#log_fit <- fit(log_wkflow, titanic_training)
+```
+
+### Question 6
+### Question 7
+### Question 8
+### Question 9
+### Question 10
