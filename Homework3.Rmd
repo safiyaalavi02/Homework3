@@ -11,6 +11,12 @@ library(tidymodels)
 library(tidyr)
 library(tidyverse)
 library(corrr)
+library(ISLR) 
+library(ISLR2)
+library(klaR)
+library(discrim)
+tidymodels_prefer()
+
 # read data into R
 titanic = read_csv("/Users/safiyaalavi/Desktop/PSTAT 131/homework-3/data/titanic.csv")
 
@@ -29,6 +35,8 @@ It is a good idea to use stratified sampling because we want to ensure we have a
 ```{r question 1, message=FALSE}
 # split the titanic data into training and testing data sets
 set.seed(12345)
+titanic$pclass <- factor(titanic$pclass, levels = c(1,2,3))
+titanic$survived <- factor(titanic$survived, levels = c("Yes","No"))
 titanic_split <- initial_split(titanic, prop = 0.75, strata = survived)
 titanic_training <- training(titanic_split)
 titanic_testing <- testing(titanic_split)
@@ -66,7 +74,7 @@ Through the visual, we can see that age and sib_sp (# of siblings/spouses on boa
 ##### Recall that there were missing values for age. To deal with this, add an imputation step using step_impute_linear(). Next, use step_dummy() to dummy encode categorical predictors. Finally, include interactions between: Sex and passenger fare, and Age and passenger fare.
 
 ```{r question 4, message = FALSE}
-titanic_recipe <- recipe(survived ~ pclass + sex + age + sib_sp + parch + fare, data = titanic_training) %>% step_impute_linear(age) %>% step_dummy(pclass, sex) %>% step_interact(terms = ~ sex:fare + age:fare)
+titanic_recipe <- recipe(survived ~ pclass + sex + age + sib_sp + parch + fare, data = titanic_training) %>% step_impute_linear(age, impute_with = imp_vars(sib_sp)) %>% step_dummy(all_nominal_predictors()) %>% step_interact( ~ starts_with("sex"):fare + age:fare)
 ```
 <br>
 <br>
@@ -75,7 +83,6 @@ titanic_recipe <- recipe(survived ~ pclass + sex + age + sib_sp + parch + fare, 
 ##### Specify a logistic regression model for classification using the "glm" engine. Then create a workflow. Add your model and the appropriate recipe. Finally, use fit() to apply your workflow to the training data.
 
 ```{r question 5, message = FALSE}
-
 # specifying the logistic regression model using the glm engine
 log_reg <- logistic_reg() %>% set_engine("glm") %>% set_mode("classification")
 
@@ -84,11 +91,89 @@ log_wkflow <- workflow() %>%
   add_model(log_reg) %>% 
   add_recipe(titanic_recipe)
 
-#log_fit <- fit(log_wkflow, titanic_training)
+log_fit_titanic <- fit(log_wkflow, titanic_training)
 ```
+<br>
+<br>
 
 ### Question 6
+##### Repeat Question 5, but this time specify a linear discriminant analysis model for classification using the "MASS" engine.
+```{r question 6, message = FALSE}
+# specifying the linear discriminant analysis model using the mass engine
+lda_mod <- discrim_linear() %>% set_mode("classification") %>% set_engine("MASS")
+
+lda_wkflow <- workflow() %>% 
+  add_model(lda_mod) %>% 
+  add_recipe(titanic_recipe)
+
+lda_fit_titanic <- fit(lda_wkflow, titanic_training)
+```
+
 ### Question 7
+##### Repeat Question 5, but this time specify a quadratic discriminant analysis model for classification using the "MASS" engine. 
+```{r question 7, message = FALSE}
+# specifying the quadratic discriminant analysis model using the mass engine
+qda_mod <- discrim_quad() %>% 
+  set_mode("classification") %>% 
+  set_engine("MASS")
+
+qda_wkflow <- workflow() %>% 
+  add_model(qda_mod) %>% 
+  add_recipe(titanic_recipe)
+
+qda_fit_titanic <- fit(qda_wkflow, titanic_training)
+```
 ### Question 8
+
+```{r question 8, message = FALSE}
+# specifying the naive Bayes model using the mass engine
+nb_mod <- naive_Bayes() %>% 
+  set_mode("classification") %>% 
+  set_engine("klaR") %>% 
+  set_args(usekernel = FALSE) 
+
+nb_wkflow <- workflow() %>% 
+  add_model(nb_mod) %>% 
+  add_recipe(titanic_recipe)
+
+nb_fit_titanic <- fit(nb_wkflow, titanic_training)
+```
 ### Question 9
+##### Now you’ve fit four different models to your training data.
+
+##### Use predict() and bind_cols() to generate predictions using each of these 4 models and your training data. Then use the accuracy metric to assess the performance of each of the four models.
+
+##### Which model achieved the highest accuracy on the training data?
+
+```{r}
+# logistic regression model
+predict(log_fit_titanic, new_data = titanic_training, type = "prob")
+
+log_acc_titantic <- augment(log_fit_titanic, new_data = titanic_training) %>% accuracy(truth = survived, estimate = .pred_class)
+log_acc_titantic
+
+# linear discriminant model
+predict(lda_fit_titanic, new_data = titanic_training, type = "prob")
+
+lda_acc_titantic <- augment(lda_fit_titanic, new_data = titanic_training) %>% accuracy(truth = survived, estimate = .pred_class)
+lda_acc_titantic
+
+# quadratic discriminant model
+predict(qda_fit_titanic, new_data = titanic_training, type = "prob")
+
+qda_acc_titantic <- augment(qda_fit_titanic, new_data = titanic_training) %>% accuracy(truth = survived, estimate = .pred_class)
+qda_acc_titantic
+
+# naive Bayes model
+predict(nb_fit_titanic, new_data = titanic_training, type = "prob")
+
+nb_acc_titantic <- augment(nb_fit_titanic, new_data = titanic_training) %>% accuracy(truth = survived, estimate = .pred_class)
+nb_acc_titantic
+
+```
+
 ### Question 10
+```{r}
+
+```
+
