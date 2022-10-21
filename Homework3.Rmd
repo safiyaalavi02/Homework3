@@ -145,34 +145,95 @@ nb_fit_titanic <- fit(nb_wkflow, titanic_training)
 
 ##### Which model achieved the highest accuracy on the training data?
 
-```{r}
+```{r question 9, message = FALSE, warning=FALSE}
 # logistic regression model
-predict(log_fit_titanic, new_data = titanic_training, type = "prob")
+titanic_train_predict_log <- predict(log_fit_titanic, new_data = titanic_training %>% select(-survived), type = "class") 
+
+titanic_train_predict_log <- bind_cols(titanic_train_predict_log, titanic_training %>% select(survived))
 
 log_acc_titantic <- augment(log_fit_titanic, new_data = titanic_training) %>% accuracy(truth = survived, estimate = .pred_class)
+
 log_acc_titantic
 
+# Coburn's code 
+
+#log_acc_titantic <- predict(log_fit_titanic, new_data = titanic_training, type = "class") %>%  bind_cols(titanic_training %>% select(survived)) %>% accuracy(truth = survived, estimate = .pred_class)
+
+#log_acc_titantic
+
 # linear discriminant model
-predict(lda_fit_titanic, new_data = titanic_training, type = "prob")
+titanic_train_predict_lda <- predict(lda_fit_titanic, new_data = titanic_training %>% select(-survived), type = "prob")
+
+titanic_train_predict_lda <- bind_cols(titanic_train_predict_lda, titanic_training %>% select(survived))
 
 lda_acc_titantic <- augment(lda_fit_titanic, new_data = titanic_training) %>% accuracy(truth = survived, estimate = .pred_class)
+
 lda_acc_titantic
 
 # quadratic discriminant model
-predict(qda_fit_titanic, new_data = titanic_training, type = "prob")
+titanic_train_predict_qda <- predict(qda_fit_titanic, new_data = titanic_training %>% select(-survived), type = "prob")
+
+titanic_train_predict_qda <- bind_cols(titanic_train_predict_qda, titanic_training %>% select(survived))
 
 qda_acc_titantic <- augment(qda_fit_titanic, new_data = titanic_training) %>% accuracy(truth = survived, estimate = .pred_class)
+
 qda_acc_titantic
 
 # naive Bayes model
-predict(nb_fit_titanic, new_data = titanic_training, type = "prob")
+titanic_train_predict_nb <- predict(nb_fit_titanic, new_data = titanic_training %>% select(-survived), type = "prob")
+
+titanic_train_predict_nb <- bind_cols(titanic_train_predict_nb, titanic_training %>% select(survived))
 
 nb_acc_titantic <- augment(nb_fit_titanic, new_data = titanic_training) %>% accuracy(truth = survived, estimate = .pred_class)
+
 nb_acc_titantic
+
+results <- bind_rows(log_acc_titantic, lda_acc_titantic, qda_acc_titantic, nb_acc_titantic) %>% 
+  tibble() %>% mutate(model = c("Logistic Regression Model", "Linear Discriminant Model", "Quadratic Discriminant Model", "Naive Bayes Model")) %>% 
+  select(model, .estimate)
+results
 ```
+My logistic regression model performed the best with an estimated accuracy of 81.2%. Whereas, the linear discriminant model performed at a 79.3% accuracy, the quadratic discriminant model at a 76.9% accuracy and lastly, the naive Bayes model at a 77.1% accuracy. 
+
+<br>
+<br>
+
 
 ### Question 10
-```{r}
+##### Fit the model with the highest training accuracy to the testing data. Report the accuracy of the model on the testing data.
 
+##### Again using the testing data, create a confusion matrix and visualize it. Plot an ROC curve and calculate the area under it (AUC).
+
+##### How did the model perform? Compare its training and testing accuracies. If the values differ, why do you think this is so?
+
+
+```{r question 10, message = FALSE}
+# logistic regression model with testing data
+titanic_test_predict_log <- predict(log_fit_titanic, new_data = titanic_testing %>% select(-survived), type = "prob") 
+
+titanic_test_predict_log <- bind_cols(titanic_test_predict_log, titanic_testing %>% select(survived))
+
+log_acc_titantic_test <- augment(log_fit_titanic, new_data = titanic_testing) %>% accuracy(truth = survived, estimate = .pred_class)
+
+log_acc_titantic_test #79.9% accuracy
+
+```
+<br>
+<br>
+
+The highest training accuracy came from the logistic regression model, and the estimate for the accuracy on the testing data is 76.8%. 
+
+
+```{r question 10 continued, message=FALSE}
+titanic_log_test <- fit(log_wkflow, titanic_testing)
+titanic_log_test_results <- augment(titanic_log_test, new_data = titanic_testing)
+
+titanic_log_test_results %>% conf_mat(truth = survived, estimate = .pred_class) %>% autoplot(type = "heatmap")
+
+titanic_log_test_results %>% 
+  roc_curve(survived, .pred_Yes) %>%
+  autoplot()
+titanic_log_test_results %>% 
+  roc_auc(survived, .pred_Yes)
 ```
 
