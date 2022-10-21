@@ -169,7 +169,6 @@ predict(nb_fit_titanic, new_data = titanic_training, type = "prob")
 
 nb_acc_titantic <- augment(nb_fit_titanic, new_data = titanic_training) %>% accuracy(truth = survived, estimate = .pred_class)
 nb_acc_titantic
-
 ```
 
 ### Question 10
