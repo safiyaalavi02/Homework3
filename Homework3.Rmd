@@ -2,7 +2,11 @@
 title: "Homework3"
 author: "Safiya Alavi"
 date: "10/18/2022"
-output: html_document
+output: 
+  html_document: 
+    highlight: pygments
+    theme: cosmo
+    toc: yes
 ---
 ```{r set up, include = FALSE}
 knitr::opts_chunk$set(echo = TRUE)
