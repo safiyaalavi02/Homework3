@@ -346,15 +346,15 @@ nb_acc_titantic</code></pre>
 ## 1 accuracy binary         0.771</code></pre>
 <pre class="r"><code>results &lt;- bind_rows(log_acc_titantic, lda_acc_titantic, qda_acc_titantic, nb_acc_titantic) %&gt;% 
   tibble() %&gt;% mutate(model = c(&quot;Logistic Regression Model&quot;, &quot;Linear Discriminant Model&quot;, &quot;Quadratic Discriminant Model&quot;, &quot;Naive Bayes Model&quot;)) %&gt;% 
-  select(model, .estimate)
+  select(model, .estimate) %&gt;% arrange(.estimate)
 results</code></pre>
 <pre><code>## # A tibble: 4 × 2
 ##   model                        .estimate
 ##   &lt;chr&gt;                            &lt;dbl&gt;
-## 1 Logistic Regression Model        0.813
-## 2 Linear Discriminant Model        0.793
-## 3 Quadratic Discriminant Model     0.769
-## 4 Naive Bayes Model                0.771</code></pre>
+## 1 Quadratic Discriminant Model     0.769
+## 2 Naive Bayes Model                0.771
+## 3 Linear Discriminant Model        0.793
+## 4 Logistic Regression Model        0.813</code></pre>
 <p>My logistic regression model performed the best with an estimated accuracy of 81.2%. Whereas, the linear discriminant model performed at a 79.3% accuracy, the quadratic discriminant model at a 76.9% accuracy and lastly, the naive Bayes model at a 77.1% accuracy.</p>
 <p><br> <br></p>
 </div>
@@ -382,7 +382,7 @@ log_acc_titantic_test #79.9% accuracy</code></pre>
 ##   &lt;chr&gt;    &lt;chr&gt;          &lt;dbl&gt;
 ## 1 accuracy binary         0.799</code></pre>
 <p><br> <br></p>
-<p>The highest training accuracy came from the logistic regression model, and the estimate for the accuracy on the testing data is 76.8%.</p>
+<p>The highest training accuracy came from the logistic regression model, and the estimate for the accuracy on the testing data is 79.9%.</p>
 <pre class="r"><code>titanic_log_test &lt;- fit(log_wkflow, titanic_testing)
 titanic_log_test_results &lt;- augment(titanic_log_test, new_data = titanic_testing)
 
@@ -398,6 +398,7 @@ titanic_log_test_results %&gt;% conf_mat(truth = survived, estimate = .pred_clas
 ##   .metric .estimator .estimate
 ##   &lt;chr&gt;   &lt;chr&gt;          &lt;dbl&gt;
 ## 1 roc_auc binary         0.871</code></pre>
+<p><br> <br> The area under the ROC curve is 0.87, which is measuring how well the model successfully discriminates between classes. In my opinion, overall, the model performed pretty well with an final accuracy of about 80% on the testing data. The accuracy on the training data was about 81%, so as we can see, the model performed very similarly for both the training and testing data. The 1% of difference in accuracy can be intuitively understood due to the fact that the model was tested on different data than it was trained on.</p>
 </div>
 </div>
 

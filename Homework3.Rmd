@@ -190,7 +190,7 @@ nb_acc_titantic
 
 results <- bind_rows(log_acc_titantic, lda_acc_titantic, qda_acc_titantic, nb_acc_titantic) %>% 
   tibble() %>% mutate(model = c("Logistic Regression Model", "Linear Discriminant Model", "Quadratic Discriminant Model", "Naive Bayes Model")) %>% 
-  select(model, .estimate)
+  select(model, .estimate) %>% arrange(.estimate)
 results
 ```
 My logistic regression model performed the best with an estimated accuracy of 81.2%. Whereas, the linear discriminant model performed at a 79.3% accuracy, the quadratic discriminant model at a 76.9% accuracy and lastly, the naive Bayes model at a 77.1% accuracy. 
@@ -221,7 +221,7 @@ log_acc_titantic_test #79.9% accuracy
 <br>
 <br>
 
-The highest training accuracy came from the logistic regression model, and the estimate for the accuracy on the testing data is 76.8%. 
+The highest training accuracy came from the logistic regression model, and the estimate for the accuracy on the testing data is 79.9%. 
 
 
 ```{r question 10 continued, message=FALSE}
@@ -237,3 +237,6 @@ titanic_log_test_results %>%
   roc_auc(survived, .pred_Yes)
 ```
 
+<br>
+<br>
+The area under the ROC curve is 0.87, which is measuring how well the model successfully discriminates between classes. In my opinion, overall, the model performed pretty well with an final accuracy of about 80% on the testing data. The accuracy on the training data was about 81%, so as we can see, the model performed very similarly for both the training and testing data. The 1% of difference in accuracy can be intuitively understood due to the fact that the model was tested on different data than it was trained on. 
